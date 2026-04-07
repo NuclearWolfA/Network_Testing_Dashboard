@@ -1,0 +1,8 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.1
+sqlalchemy==2.0.41
+psycopg[binary]==3.2.13
+alembic==1.15.2
+pydantic-settings==2.8.1
+paho-mqtt==2.1.0
+python-dateutil==2.9.0.post0
