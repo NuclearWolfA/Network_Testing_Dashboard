@@ -1,4 +1,6 @@
-export type Metrics = {
+export type DummyViewModel = {
+  message: string;
+};export type Metrics = {
   total_messages: number;
   parsed_messages: number;
   encoded_unparsed_messages: number;

@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "apply-alembic-head",
+			"type": "shell",
+			"command": "d:\\Tharoosha\\FYP\\repos\\Network_Testing_Dashboard\\.venv\\Scripts\\python.exe",
+			"args": [
+				"-m",
+				"alembic",
+				"upgrade",
+				"head"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "apply-alembic-head-quoted",
+			"type": "shell",
+			"command": "& 'd:\\Tharoosha\\FYP\\repos\\Network_Testing_Dashboard\\.venv\\Scripts\\python.exe' -m alembic upgrade head",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

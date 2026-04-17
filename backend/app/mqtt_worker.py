@@ -1,5 +1,3 @@
-import json
-
 import paho.mqtt.client as mqtt
 
 from app.core.config import settings
@@ -24,7 +22,7 @@ def on_message(client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
             meta={"properties": str(getattr(message, "properties", None))},
         )
     except Exception as exc:
-        print(json.dumps({"error": "mqtt_ingest_failed", "reason": str(exc)}))
+        print(f"mqtt_ingest_failed: {exc}")
         db.rollback()
     finally:
         db.close()
