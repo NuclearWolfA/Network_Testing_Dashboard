@@ -18,9 +18,10 @@ def on_receive(packet, interface):
         source=f"0x{int(packet['from']):x}",
         destination=f"0x{int(packet['to']):x}",
         reporter=f"0x{int(interface.myInfo.my_node_num):x}",
-        timestamp = datetime.now(),
+        timestamp = datetime.now().astimezone(),
         sequence_number=packet["id"],
     )
+    #print(f"[Debug] Timestamp: {message.timestamp}")
     if packet.get("decoded"):
         if packet["decoded"].get("payload"):
             message.payload = packet["decoded"]["payload"]
