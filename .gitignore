@@ -2,6 +2,12 @@
 backend/.venv/
 backend/__pycache__/
 backend/.pytest_cache/
+backend/app/serial/__pycache__/
+backend/app/models/__pycache__/
+backend/app/db/__pycache__/
+backend/app/serial/meshtastic_client.pyc
+backend/app/services/__pycache__/
+backend/app/schemas/__pycache__/
 
 # Node
 frontend/node_modules/
