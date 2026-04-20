@@ -16,3 +16,6 @@ Thumbs.db
 .env
 backend/.venv
 frontend/.env
+
+# Local cert bundles
+global-bundle.pem

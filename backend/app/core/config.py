@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     app_name: str = "Network Testing Dashboard API"
     api_prefix: str = "/api"
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/network_dashboard"
+    database_url: str
 
     mqtt_host: str = "localhost"
     mqtt_port: int = 1883

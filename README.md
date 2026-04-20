@@ -22,6 +22,17 @@ alembic upgrade head
 python -m app.mqtt_worker
 ```
 
+## Hard reset DB (data loss)
+
+If your database points to a missing revision (for example, "Can't locate revision"),
+you can wipe the schema and rebuild migrations from scratch:
+
+```bash
+cd backend
+.venv\Scripts\activate
+python reset_db_and_migrate.py
+```
+
 ```bash
 cd frontend
 npm install
