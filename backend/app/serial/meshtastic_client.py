@@ -13,6 +13,7 @@ def get_meshtastic_ports():
 
 def on_receive(packet, interface):
     print(f"Received packet on {interface.myInfo.my_node_num}: {packet}")
+    need_to_udload = True
     message = Message(
         source=f"0x{int(packet['from']):x}",
         destination=f"0x{int(packet['to']):x}",
@@ -25,12 +26,15 @@ def on_receive(packet, interface):
             message.payload = packet["decoded"]["payload"]
         if packet["decoded"].get("portnum"):
             message.portnum = packet["decoded"]["portnum"]
+            if message.portnum == "TELEMETRY_APP":
+                need_to_udload = False
     if packet.get("nextHop"):
         message.next_hop = f"0x{int(packet['nextHop']):x}"
-    session = SessionLocal()
-    session.add(message)
-    session.commit()
-    session.close()
+    if need_to_udload:
+        session = SessionLocal()
+        session.add(message)
+        session.commit()
+        session.close()
 
 def start_meshtastic_client(app):
     print("Starting meshtastic client...")
