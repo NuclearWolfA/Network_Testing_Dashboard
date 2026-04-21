@@ -31,6 +31,8 @@ def on_receive(packet, interface):
                 need_to_udload = False
     if packet.get("nextHop"):
         message.next_hop = f"0x{int(packet['nextHop']):x}"
+    if packet.get("relayNode"):
+        message.relay_node = f"0x{int(packet['relayNode']):x}"
     if need_to_udload:
         session = SessionLocal()
         try:

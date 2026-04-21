@@ -33,4 +33,6 @@ class Message(Base):
     sequence_number: Mapped[int] = mapped_column(BigInteger, nullable=False)
     payload: Mapped[bytes] = mapped_column(Text, nullable=True)
     next_hop: Mapped[Optional[hex]] = mapped_column(String(128), nullable=True, index=True)
+    relay_node: Mapped[Optional[hex]] = mapped_column(String(128), nullable=True, index=True)
     portnum: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+    message_type: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
