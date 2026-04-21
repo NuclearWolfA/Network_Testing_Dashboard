@@ -26,10 +26,19 @@ def on_receive(packet, interface):
     if packet.get("decoded"):
         if packet["decoded"].get("payload"):
             message.payload = packet["decoded"]["payload"]
+        if packet["decoded"].get("requestId"):
+            message.request_id = packet["decoded"]["requestId"]
+        if packet["decoded"].get('routing'):
+            ack_info = packet["decoded"]['routing']
+            if ack_info.get('errorReason'):
+                if ack_info['errorReason'] == 'NONE':
+                    message.message_type = "ACK"
+                else:
+                    message.message_type = "NACK"
         if packet["decoded"].get("portnum"):
             message.portnum = packet["decoded"]["portnum"]
-            print(f"Received message on port {message.portnum}")
-            print(f"Type of the portnum: {type(message.portnum)}")
+            #print(f"Received message on port {message.portnum}")
+            #print(f"Type of the portnum: {type(message.portnum)}")
             if message.portnum == "TELEMETRY_APP" or message.portnum == "SIMULATOR_APP":
                 need_to_upload = False
             elif message.portnum == 78: # SDN messages

@@ -36,3 +36,4 @@ class Message(Base):
     relay_node: Mapped[Optional[hex]] = mapped_column(String(128), nullable=True, index=True)
     portnum: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     message_type: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+    request_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, index=True)
