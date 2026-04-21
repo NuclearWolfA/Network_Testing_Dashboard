@@ -6,6 +6,7 @@ import meshtastic.serial_interface
 from app.db.session import SessionLocal
 from app.models.entities import Message
 
+from app.generated import sdn_pb2, aodv_pb2, portnums_pb2
 
 def get_meshtastic_ports():
     ports: meshtastic.serial_interface.List[str] = meshtastic.util.findPorts(True)
@@ -13,7 +14,7 @@ def get_meshtastic_ports():
 
 def on_receive(packet, interface):
     print(f"Received packet on {interface.myInfo.my_node_num}: {packet}")
-    need_to_udload = True
+    need_to_upload = True
     message = Message(
         source=f"0x{int(packet['from']):x}",
         destination=f"0x{int(packet['to']):x}",
@@ -27,13 +28,58 @@ def on_receive(packet, interface):
             message.payload = packet["decoded"]["payload"]
         if packet["decoded"].get("portnum"):
             message.portnum = packet["decoded"]["portnum"]
-            if message.portnum == "TELEMETRY_APP":
-                need_to_udload = False
+            print(f"Received message on port {message.portnum}")
+            print(f"Type of the portnum: {type(message.portnum)}")
+            if message.portnum == "TELEMETRY_APP" or message.portnum == "SIMULATOR_APP":
+                need_to_upload = False
+            elif message.portnum == 78: # SDN messages
+                payload = packet["decoded"].get('payload', None)
+                try:
+                    sdn_message = sdn_pb2.SDN()
+                    sdn_message.ParseFromString(payload)
+                    if sdn_message.HasField("announcement"):
+                        message.message_type = "ANNOUNCEMENT"
+                    elif sdn_message.HasField("route_update"):
+                        message.message_type = "ROUTE_UPDATE"
+                    elif sdn_message.HasField("route_command"):
+                        message.message_type = "ROUTE_COMMAND"
+                    elif sdn_message.HasField("route_install"):
+                        message.message_type = "ROUTE_INSTALL"
+                    elif sdn_message.HasField("route_set"):
+                        message.message_type = "ROUTE_SET"
+                    elif sdn_message.HasField("route_set_confirm"):
+                        message.message_type = "ROUTE_SET_CONFIRM"
+                    elif sdn_message.HasField("link_quality"):
+                        message.message_type = "LINK_QUALITY"
+                    else:
+                        message.message_type = "UNKNOWN_SDN_MESSAGE"
+                except Exception as e:
+                    print(f"Error parsing SDN message: {e}")
+            
+            elif message.portnum == 75:
+                payload = packet["decoded"].get('payload', None)
+                try:
+                    aodv_message = aodv_pb2.AODV()
+                    aodv_message.ParseFromString(payload)
+                    if aodv_message.HasField("rreq"):
+                        message.message_type = "RREQ"
+                    elif aodv_message.HasField("rrep"):
+                        message.message_type = "RREP"
+                    elif aodv_message.HasField("rerr"):
+                        message.message_type = "RERR"
+                    elif aodv_message.HasField("rrep_ack"):
+                        message.message_type = "RREP_ACK"
+                    else:
+                        message.message_type = "UNKNOWN_AODV_MESSAGE"
+                except Exception as e:
+                    print(f"Error parsing AODV message: {e}")
+
+
     if packet.get("nextHop"):
         message.next_hop = f"0x{int(packet['nextHop']):x}"
     if packet.get("relayNode"):
         message.relay_node = f"0x{int(packet['relayNode']):x}"
-    if need_to_udload:
+    if need_to_upload:
         session = SessionLocal()
         try:
             session.add(message)
