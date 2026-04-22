@@ -89,6 +89,44 @@ def get_sender_messages(node_id: str) -> dict[str, str | int | list[dict[str, st
         session.close()
 
 
+@router.get("/nodes/{node_id}/messages/{sequence_number}/reports")
+def get_sequence_reports(node_id: str, sequence_number: int) -> dict[str, str | int | list[dict[str, str | int | None]]]:
+    session = SessionLocal()
+    try:
+        rows = (
+            session.query(Message)
+            .filter(Message.source == node_id, Message.sequence_number == sequence_number)
+            .order_by(Message.timestamp.asc(), Message.id.asc())
+            .all()
+        )
+
+        reports = [
+            {
+                "id": row.id,
+                "source": row.source,
+                "destination": row.destination,
+                "reporter": row.reporter,
+                "sequence_number": row.sequence_number,
+                "timestamp": row.timestamp.isoformat(),
+                "next_hop": row.next_hop,
+                "relay_node": row.relay_node,
+                "portnum": row.portnum,
+                "message_type": row.message_type,
+                "request_id": row.request_id,
+            }
+            for row in rows
+        ]
+
+        return {
+            "node_id": node_id,
+            "sequence_number": sequence_number,
+            "count": len(reports),
+            "reports": reports,
+        }
+    finally:
+        session.close()
+
+
 @router.post("/backend/register")
 def register_backend_network() -> dict[str, str | int | bool | None]:
     session = SessionLocal()
