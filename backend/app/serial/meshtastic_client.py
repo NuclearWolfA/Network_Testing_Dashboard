@@ -4,7 +4,8 @@ from pubsub import pub
 import meshtastic
 import meshtastic.serial_interface
 from app.db.session import SessionLocal
-from app.models.entities import Message
+from app.models.entities import Message, Node
+from app.core.config import settings
 
 from app.generated import sdn_pb2, aodv_pb2, portnums_pb2
 
@@ -114,6 +115,7 @@ def start_meshtastic_client(app):
             app.state.comport_intereface_dic[port] = interface
             app.state.comport_intereface_dic[port].app = app
             app.state.node_id_interface_dic[f"0x{int(interface.myInfo.my_node_num):x}"] = interface
+            upsert_node(f"0x{int(interface.myInfo.my_node_num):x}")
             print(f"Connected to meshtastic device on port {port}")
             
         except Exception as e:
@@ -146,3 +148,26 @@ def send_meshtastic_message(app,interface,destination,payload):
     except Exception as e:
         print(f"Error sending or updating database for meshtastic message: {e}")
     return None
+
+def upsert_node(node_id: str):
+    session = SessionLocal()
+    backend_id = settings.backend_id
+    last_byte = node_id[-2:]
+    if last_byte == "00":
+        last_byte = "ff"
+    try:
+        node = session.query(Node).filter(Node.node_id == node_id).one_or_none()
+        if node is None:
+            node = Node(node_id=node_id, backend_id=backend_id, last_byte=last_byte)
+            session.add(node)
+        else:
+            node.backend_id = backend_id
+            node.last_byte = last_byte
+        session.commit()
+        session.refresh(node)
+        return node
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
 
 from app.serial.meshtastic_client import send_meshtastic_message
 
@@ -9,6 +10,11 @@ router = APIRouter()
 @router.get("/dummy")
 def dummy_api() -> dict[str, str]:
     return {"message": "dummy backend api"}
+
+
+@router.get("/nodes")
+def nodes_legacy_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/api/analyze/nodes", status_code=307)
 
 @router.post("/send")
 async def send_text(request: Request, source: str, destination: str, payload: str):

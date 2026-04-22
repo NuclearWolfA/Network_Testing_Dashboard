@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from sqlalchemy import BigInteger, Boolean, DateTime, SmallInteger, String, Text, func, text
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, SmallInteger, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -53,3 +53,9 @@ class BackendInstance(Base):
     nat_detected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now(), index=True)
     extra: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
+
+class Node(Base):
+    __tablename__ = "nodes"
+    node_id: Mapped[hex] = mapped_column(String(128), primary_key=True, nullable=False, index=True)
+    backend_id: Mapped[str] = mapped_column(String(128), ForeignKey("backend_instances.backend_id"), primary_key=True, nullable=False, index=True)
+    last_byte: Mapped[hex] = mapped_column(String(2), nullable=False)

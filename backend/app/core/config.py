@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     mqtt_topic: str = "meshtastic/#"
     mqtt_client_id: str = "network-testing-dashboard"
 
-    backend_id: str = "backend-default"
+    backend_id: str = "backend-acer-tharoosha"
     backend_scheme: str = "http"
     backend_bind_port: int = 8000
     backend_public_port: int | None = None
