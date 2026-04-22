@@ -1,6 +1,7 @@
-from app.models.entities import MqttMessage
+from app.models.entities import BackendInstance, Message, MqttMessage
 
 __all__ = [
-    "MqttMessage",
+    "BackendInstance",
     "Message",
+    "MqttMessage",
 ]

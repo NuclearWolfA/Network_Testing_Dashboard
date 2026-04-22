@@ -13,5 +13,12 @@ class Settings(BaseSettings):
     mqtt_topic: str = "meshtastic/#"
     mqtt_client_id: str = "network-testing-dashboard"
 
+    backend_id: str = "backend-default"
+    backend_scheme: str = "http"
+    backend_bind_port: int = 8000
+    backend_public_port: int | None = None
+    backend_public_base_url: str | None = None
+    backend_public_ip_service_url: str = "https://api.ipify.org"
+
 
 settings = Settings()

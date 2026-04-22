@@ -37,3 +37,19 @@ class Message(Base):
     portnum: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     message_type: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     request_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, index=True)
+
+
+class BackendInstance(Base):
+    __tablename__ = "backend_instances"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    backend_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+    scheme: Mapped[str] = mapped_column(String(16), nullable=False, default="http")
+    local_ip: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    local_port: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=8000)
+    public_ip: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    public_port: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
+    base_url: Mapped[str] = mapped_column(String(512), nullable=False)
+    nat_detected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now(), index=True)
+    extra: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
