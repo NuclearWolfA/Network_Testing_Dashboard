@@ -1,6 +1,7 @@
 import type {
 	MessageQueryResponse,
 	NodeRecord,
+	SendMessageResponse,
 	SenderMessagesResponse,
 	SenderSequenceResponse,
 	SequenceReportsResponse,
@@ -70,4 +71,32 @@ export async function fetchSequenceReports(nodeId: string, sequenceNumber: numbe
 		throw new Error(`Sequence reports request failed: ${response.status}`);
 	}
 	return (await response.json()) as SequenceReportsResponse;
+}
+
+
+export async function sendMessage(params: {
+	source: string;
+	destination: string;
+	payload: string;
+}): Promise<SendMessageResponse> {
+	const query = new URLSearchParams({
+		source: params.source.trim(),
+		destination: params.destination.trim(),
+		payload: params.payload,
+	});
+
+	const response = await fetch(`/api/send?${query.toString()}`, {
+		method: "POST",
+	});
+
+	const data = (await response.json()) as SendMessageResponse;
+	if (!response.ok) {
+		throw new Error(data.error ?? `Send request failed: ${response.status}`);
+	}
+
+	if (data.error) {
+		throw new Error(data.error);
+	}
+
+	return data;
 }

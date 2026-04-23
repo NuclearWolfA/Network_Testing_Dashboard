@@ -156,3 +156,9 @@ export type PacketPath = {
     snr: number | null;
   }>;
 };
+
+export type SendMessageResponse = {
+  message?: string;
+  sequence_number?: number;
+  error?: string;
+};
