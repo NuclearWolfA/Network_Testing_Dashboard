@@ -37,6 +37,7 @@ class Message(Base):
     portnum: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     message_type: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     request_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, index=True)
+    hops_away: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True)
 
 
 class BackendInstance(Base):
