@@ -28,8 +28,8 @@ export default function NodesPage() {
     void loadNodes();
   }, []);
 
-  const goToMessagesPage = (node: NodeRecord) => {
-    navigate(`/messages/query?source=${encodeURIComponent(node.node_id)}`);
+  const goToMessageQueryPage = () => {
+    navigate("/messages/query");
   };
 
   return (
@@ -38,9 +38,12 @@ export default function NodesPage() {
         <p className="eyebrow">Network Testing Dashboard</p>
         <div className="panel-head">
           <h1>Nodes</h1>
-          <button type="button" onClick={() => void loadNodes()} disabled={isLoading}>
-            {isLoading ? "Loading..." : "Refresh"}
-          </button>
+          <div className="actions-row">
+            <button type="button" onClick={goToMessageQueryPage}>Message Query</button>
+            <button type="button" onClick={() => void loadNodes()} disabled={isLoading}>
+              {isLoading ? "Loading..." : "Refresh"}
+            </button>
+          </div>
         </div>
 
         {error ? <p className="error">{error}</p> : null}
@@ -61,10 +64,7 @@ export default function NodesPage() {
                 </tr>
               ) : (
                 nodes.map((node) => (
-                  <tr
-                    key={`${node.node_id}-${node.backend_id}`}
-                    onClick={() => goToMessagesPage(node)}
-                  >
+                  <tr key={`${node.node_id}-${node.backend_id}`}>
                     <td>{node.node_id}</td>
                     <td>{node.backend_id}</td>
                     <td>{node.last_byte}</td>

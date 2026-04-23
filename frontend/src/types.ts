@@ -32,6 +32,7 @@ export type MessageQueryFilters = {
   source: string;
   destination: string;
   message_type: string;
+  portnum: string;
 };
 
 export type MessageQueryResponse = {

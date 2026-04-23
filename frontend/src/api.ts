@@ -38,6 +38,7 @@ export async function fetchQueryMessages(filters: {
 	source?: string;
 	destination?: string;
 	messageType?: string;
+	portnum?: string;
 }): Promise<MessageQueryResponse> {
 	const params = new URLSearchParams();
 	if (filters.source?.trim()) {
@@ -48,6 +49,9 @@ export async function fetchQueryMessages(filters: {
 	}
 	if (filters.messageType?.trim()) {
 		params.set("message_type", filters.messageType.trim());
+	}
+	if (filters.portnum?.trim()) {
+		params.set("portnum", filters.portnum.trim());
 	}
 
 	const query = params.toString();

@@ -94,6 +94,7 @@ def query_messages(
     source: str | None = None,
     destination: str | None = None,
     message_type: str | None = None,
+    portnum: str | None = None,
 ) -> dict[str, str | int | dict[str, str] | list[dict[str, str | int | None]]]:
     session = SessionLocal()
     try:
@@ -102,6 +103,7 @@ def query_messages(
         normalized_source = source.strip() if source else ""
         normalized_destination = destination.strip() if destination else ""
         normalized_message_type = message_type.strip() if message_type else ""
+        normalized_portnum = portnum.strip() if portnum else ""
 
         if normalized_source:
             query = query.filter(Message.source == normalized_source)
@@ -109,6 +111,8 @@ def query_messages(
             query = query.filter(Message.destination == normalized_destination)
         if normalized_message_type:
             query = query.filter(Message.message_type == normalized_message_type)
+        if normalized_portnum:
+            query = query.filter(Message.portnum == normalized_portnum)
 
         rows = (
             query.order_by(
@@ -143,6 +147,7 @@ def query_messages(
                 "source": normalized_source,
                 "destination": normalized_destination,
                 "message_type": normalized_message_type,
+                "portnum": normalized_portnum,
             },
             "messages": messages,
         }

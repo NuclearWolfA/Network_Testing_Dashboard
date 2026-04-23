@@ -43,6 +43,12 @@ body {
   margin-bottom: 1rem;
 }
 
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 button {
   appearance: none;
   border: 1px solid var(--accent);
@@ -106,7 +112,6 @@ th {
 
 tbody tr:hover {
   background: rgba(242, 177, 56, 0.08);
-  cursor: pointer;
 }
 
 .row-active {

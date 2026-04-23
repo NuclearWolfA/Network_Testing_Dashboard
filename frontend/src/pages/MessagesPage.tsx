@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { fetchQueryMessages, fetchSequenceReports } from "../api";
-import type { MessageQueryResponse, SenderMessage, SequenceReportsResponse } from "../types";
+import { fetchQueryMessages } from "../api";
+import type { MessageQueryResponse, SenderMessage } from "../types";
 
 export default function MessagesPage() {
   const { nodeId = "" } = useParams();
@@ -11,38 +11,35 @@ export default function MessagesPage() {
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [portnum, setPortnum] = useState("");
   const [messagesData, setMessagesData] = useState<MessageQueryResponse | null>(null);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [messagesError, setMessagesError] = useState<string | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<SenderMessage | null>(null);
-  const [reportsData, setReportsData] = useState<SequenceReportsResponse | null>(null);
-  const [reportsLoading, setReportsLoading] = useState(false);
-  const [reportsError, setReportsError] = useState<string | null>(null);
 
   useEffect(() => {
     const sourceFromQuery = searchParams.get("source") ?? "";
     const destinationFromQuery = searchParams.get("destination") ?? "";
     const messageTypeFromQuery = searchParams.get("messageType") ?? "";
+    const portnumFromQuery = searchParams.get("portnum") ?? "";
 
     const initialSource = sourceFromQuery || nodeId;
 
     setSource(initialSource);
     setDestination(destinationFromQuery);
     setMessageType(messageTypeFromQuery);
+    setPortnum(portnumFromQuery);
   }, [nodeId, searchParams]);
 
   useEffect(() => {
     const load = async () => {
       setMessagesError(null);
       setMessagesLoading(true);
-      setSelectedMessage(null);
-      setReportsData(null);
-      setReportsError(null);
       try {
         const data = await fetchQueryMessages({
           source: searchParams.get("source") ?? nodeId,
           destination: searchParams.get("destination") ?? "",
           messageType: searchParams.get("messageType") ?? "",
+          portnum: searchParams.get("portnum") ?? "",
         });
         setMessagesData(data);
       } catch (err) {
@@ -68,6 +65,9 @@ export default function MessagesPage() {
     if (messageType.trim()) {
       next.set("messageType", messageType.trim());
     }
+    if (portnum.trim()) {
+      next.set("portnum", portnum.trim());
+    }
     setSearchParams(next);
   };
 
@@ -75,23 +75,12 @@ export default function MessagesPage() {
     setSource("");
     setDestination("");
     setMessageType("");
+    setPortnum("");
     setSearchParams(new URLSearchParams());
   };
 
-  const loadSequenceReports = async (message: SenderMessage) => {
-    setSelectedMessage(message);
-    setReportsLoading(true);
-    setReportsError(null);
-    try {
-      const data = await fetchSequenceReports(message.source, message.sequence_number);
-      setReportsData(data);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch sequence reports";
-      setReportsError(message);
-      setReportsData(null);
-    } finally {
-      setReportsLoading(false);
-    }
+  const goToSequenceReports = (message: SenderMessage) => {
+    navigate(`/messages/${encodeURIComponent(message.source)}/sequence/${message.sequence_number}`);
   };
 
   return (
@@ -132,6 +121,15 @@ export default function MessagesPage() {
                 placeholder="e.g. route_discovery"
               />
             </label>
+            <label>
+              Portnum
+              <input
+                type="text"
+                value={portnum}
+                onChange={(event) => setPortnum(event.target.value)}
+                placeholder="e.g. NODEINFO_APP"
+              />
+            </label>
           </div>
           <div className="filter-actions">
             <button type="button" onClick={runQuery}>Run Query</button>
@@ -170,7 +168,7 @@ export default function MessagesPage() {
                           <button
                             type="button"
                             className="link-button"
-                            onClick={() => void loadSequenceReports(message)}
+                            onClick={() => goToSequenceReports(message)}
                           >
                             {message.sequence_number}
                           </button>
@@ -186,56 +184,6 @@ export default function MessagesPage() {
             </div>
           </>
         ) : null}
-
-        <section className="sender-panel reports-panel">
-          <h2>Sequence Reports</h2>
-          {selectedMessage === null ? <p className="muted">Click a sequence number to view all reports.</p> : null}
-          {selectedMessage !== null ? <p className="muted">Selected: {selectedMessage.source} / {selectedMessage.sequence_number}</p> : null}
-          {reportsLoading ? <p className="muted">Loading reports...</p> : null}
-          {reportsError ? <p className="error">{reportsError}</p> : null}
-
-          {reportsData && !reportsLoading ? (
-            <>
-              <p className="muted">Found {reportsData.count} reports for this sequence.</p>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Reporter</th>
-                      <th>Destination</th>
-                      <th>Portnum</th>
-                      <th>Message Type</th>
-                      <th>Next Hop</th>
-                      <th>Relay Node</th>
-                      <th>Request ID</th>
-                      <th>Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportsData.reports.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="empty">No reports found for this sequence.</td>
-                      </tr>
-                    ) : (
-                      reportsData.reports.map((report) => (
-                        <tr key={report.id}>
-                          <td>{report.reporter}</td>
-                          <td>{report.destination}</td>
-                          <td>{report.portnum ?? "-"}</td>
-                          <td>{report.message_type ?? "-"}</td>
-                          <td>{report.next_hop ?? "-"}</td>
-                          <td>{report.relay_node ?? "-"}</td>
-                          <td>{report.request_id ?? "-"}</td>
-                          <td>{report.timestamp}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : null}
-        </section>
       </section>
     </main>
   );
