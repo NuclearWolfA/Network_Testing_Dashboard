@@ -25,8 +25,8 @@ def on_receive(packet, interface):
         sequence_number=packet["id"],
     )
     #print(f"[Debug] Timestamp: {message.timestamp}")
-    if packet.get("hop_start") and packet.get("hop_limit"):
-        message.hops_away = packet["hop_limit"] - packet["hop_start"]
+    if packet.get("hopStart") and packet.get("hopLimit"):
+        message.hops_away = packet["hopStart"] - packet["hopLimit"]
     if packet.get("decoded"):
         if packet["decoded"].get("payload"):
             message.payload = packet["decoded"]["payload"]
