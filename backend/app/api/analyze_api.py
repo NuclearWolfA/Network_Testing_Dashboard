@@ -174,6 +174,7 @@ def get_sequence_reports(node_id: str, sequence_number: int) -> dict[str, str | 
                 "reporter": row.reporter,
                 "sequence_number": row.sequence_number,
                 "timestamp": row.timestamp.isoformat(),
+                "hops_away": row.hops_away,
                 "next_hop": row.next_hop,
                 "relay_node": row.relay_node,
                 "portnum": row.portnum,

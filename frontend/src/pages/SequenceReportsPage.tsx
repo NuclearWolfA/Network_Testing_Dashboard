@@ -113,6 +113,7 @@ export default function SequenceReportsPage() {
                         <th>Destination</th>
                         <th>Portnum</th>
                         <th>Message Type</th>
+                        <th>Hops Away</th>
                         <th>Next Hop</th>
                         <th>Relay Node</th>
                         <th>Request ID</th>
@@ -122,7 +123,7 @@ export default function SequenceReportsPage() {
                     <tbody>
                       {reportsData.reports.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="empty">No reports found for this sequence.</td>
+                          <td colSpan={9} className="empty">No reports found for this sequence.</td>
                         </tr>
                       ) : (
                         reportsData.reports.map((report) => (
@@ -131,6 +132,7 @@ export default function SequenceReportsPage() {
                             <td>{report.destination}</td>
                             <td>{report.portnum ?? "-"}</td>
                             <td>{report.message_type ?? "-"}</td>
+                            <td>{report.hops_away ?? "-"}</td>
                             <td>{report.next_hop ?? "-"}</td>
                             <td>{report.relay_node ?? "-"}</td>
                             <td>

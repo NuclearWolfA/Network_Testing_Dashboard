@@ -48,6 +48,7 @@ export type SenderMessageReport = {
   reporter: string;
   sequence_number: number;
   timestamp: string;
+  hops_away: number | null;
   next_hop: string | null;
   relay_node: string | null;
   portnum: string | null;
