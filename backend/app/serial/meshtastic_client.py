@@ -14,13 +14,14 @@ def get_meshtastic_ports():
     return ports
 
 def on_receive(packet, interface):
+    timestamp = datetime.now().astimezone()
     print(f"Received packet on {interface.myInfo.my_node_num}: {packet}")
     need_to_upload = True
     message = Message(
         source=f"0x{int(packet['from']):x}",
         destination=f"0x{int(packet['to']):x}",
         reporter=f"0x{int(interface.myInfo.my_node_num):x}",
-        timestamp = datetime.now().astimezone(),
+        timestamp = timestamp,
         sequence_number=packet["id"],
     )
     #print(f"[Debug] Timestamp: {message.timestamp}")
@@ -123,15 +124,18 @@ def start_meshtastic_client(app):
 
 def send_meshtastic_message(app,interface,destination,payload):
     try:
-        sent_message = interface.sendText(payload, destinationId=destination, wantAck=True)
+        destination_int = int(destination[2:], 16)
+        timestamp = datetime.now().astimezone()
+        sent_message = interface.sendText(payload, destinationId=destination_int, wantAck=True)
         source_id = f"0x{int(interface.myInfo.my_node_num):x}"
         message = Message(
             source=source_id,
             destination=destination,
             reporter=source_id,
-            timestamp = datetime.now().astimezone(),
+            timestamp = timestamp,
             sequence_number=sent_message.id,
             payload=payload,
+            portnum = "TEXT_MESSAGE_APP"
         )
         print(f"Sent message: {message}")
         session = SessionLocal()
