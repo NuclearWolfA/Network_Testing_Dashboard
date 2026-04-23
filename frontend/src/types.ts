@@ -162,3 +162,8 @@ export type SendMessageResponse = {
   sequence_number?: number;
   error?: string;
 };
+
+export type ClearMessagesResponse = {
+  message: string;
+  deleted_count: number;
+};

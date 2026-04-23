@@ -193,6 +193,20 @@ def get_sequence_reports(node_id: str, sequence_number: int) -> dict[str, str | 
         session.close()
 
 
+@router.post("/messages/clear")
+def clear_messages() -> dict[str, str | int]:
+    session = SessionLocal()
+    try:
+        deleted_count = session.query(Message).delete(synchronize_session=False)
+        session.commit()
+        return {
+            "message": "Messages table cleared successfully",
+            "deleted_count": deleted_count,
+        }
+    finally:
+        session.close()
+
+
 @router.post("/backend/register")
 def register_backend_network() -> dict[str, str | int | bool | None]:
     session = SessionLocal()

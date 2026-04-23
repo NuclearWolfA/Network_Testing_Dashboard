@@ -1,4 +1,5 @@
 import type {
+	ClearMessagesResponse,
 	MessageQueryResponse,
 	NodeRecord,
 	SendMessageResponse,
@@ -96,6 +97,20 @@ export async function sendMessage(params: {
 
 	if (data.error) {
 		throw new Error(data.error);
+	}
+
+	return data;
+}
+
+
+export async function clearMessagesTable(): Promise<ClearMessagesResponse> {
+	const response = await fetch("/api/analyze/messages/clear", {
+		method: "POST",
+	});
+
+	const data = (await response.json()) as ClearMessagesResponse;
+	if (!response.ok) {
+		throw new Error(`Clear messages request failed: ${response.status}`);
 	}
 
 	return data;

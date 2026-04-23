@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { fetchQueryMessages } from "../api";
+import { clearMessagesTable, fetchQueryMessages } from "../api";
 import type { MessageQueryResponse, SenderMessage } from "../types";
 
 export default function MessagesPage() {
@@ -15,6 +15,8 @@ export default function MessagesPage() {
   const [messagesData, setMessagesData] = useState<MessageQueryResponse | null>(null);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
+  const [clearStatus, setClearStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const sourceFromQuery = searchParams.get("source") ?? "";
@@ -79,6 +81,33 @@ export default function MessagesPage() {
     setSearchParams(new URLSearchParams());
   };
 
+  const clearMessages = async () => {
+    const confirmed = window.confirm("This will delete all rows in the messages table. Continue?");
+    if (!confirmed) {
+      return;
+    }
+
+    setIsClearing(true);
+    setMessagesError(null);
+    setClearStatus(null);
+    try {
+      const response = await clearMessagesTable();
+      setClearStatus(`${response.message}. Deleted rows: ${response.deleted_count}.`);
+      const refreshed = await fetchQueryMessages({
+        source: searchParams.get("source") ?? nodeId,
+        destination: searchParams.get("destination") ?? "",
+        messageType: searchParams.get("messageType") ?? "",
+        portnum: searchParams.get("portnum") ?? "",
+      });
+      setMessagesData(refreshed);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to clear messages table";
+      setMessagesError(message);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   const goToSequenceReports = (message: SenderMessage) => {
     navigate(`/messages/${encodeURIComponent(message.source)}/sequence/${message.sequence_number}`);
   };
@@ -134,11 +163,15 @@ export default function MessagesPage() {
           <div className="filter-actions">
             <button type="button" onClick={runQuery}>Run Query</button>
             <button type="button" onClick={clearQuery}>Clear</button>
+            <button type="button" onClick={() => void clearMessages()} disabled={isClearing}>
+              {isClearing ? "Clearing..." : "Clear Messages Table"}
+            </button>
           </div>
         </section>
 
         {messagesLoading ? <p className="muted">Loading messages...</p> : null}
         {messagesError ? <p className="error">{messagesError}</p> : null}
+        {clearStatus ? <p className="muted">{clearStatus}</p> : null}
 
         {messagesData && !messagesLoading ? (
           <>
