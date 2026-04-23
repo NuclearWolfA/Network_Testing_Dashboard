@@ -1,13 +1,16 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+
+import MessagesPage from "./pages/MessagesPage";
+import NodesPage from "./pages/NodesPage";
+
+
 export default function App() {
   return (
-    <main className="page">
-      <section className="hero">
-        <p className="eyebrow">Network Testing Dashboard</p>
-        <h1>MQTT message ingest only</h1>
-        <p>
-          This build keeps a single backend path for storing raw MQTT messages and a minimal front page for status display.
-        </p>
-      </section>
-    </main>
+    <Routes>
+      <Route path="/" element={<NodesPage />} />
+      <Route path="/messages/query" element={<MessagesPage />} />
+      <Route path="/messages/:nodeId" element={<MessagesPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

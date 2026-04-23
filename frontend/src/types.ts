@@ -1,6 +1,67 @@
 export type DummyViewModel = {
   message: string;
-};export type Metrics = {
+};
+
+export type NodeRecord = {
+  node_id: string;
+  backend_id: string;
+  last_byte: string;
+};
+
+export type SenderSequenceResponse = {
+  node_id: string;
+  count: number;
+  sequence_numbers: number[];
+};
+
+export type SenderMessage = {
+  sequence_number: number;
+  source: string;
+  destination: string;
+  portnum: string | null;
+  message_type: string | null;
+};
+
+export type SenderMessagesResponse = {
+  node_id: string;
+  count: number;
+  messages: SenderMessage[];
+};
+
+export type MessageQueryFilters = {
+  source: string;
+  destination: string;
+  message_type: string;
+};
+
+export type MessageQueryResponse = {
+  count: number;
+  filters: MessageQueryFilters;
+  messages: SenderMessage[];
+};
+
+export type SenderMessageReport = {
+  id: number;
+  source: string;
+  destination: string;
+  reporter: string;
+  sequence_number: number;
+  timestamp: string;
+  next_hop: string | null;
+  relay_node: string | null;
+  portnum: string | null;
+  message_type: string | null;
+  request_id: number | null;
+};
+
+export type SequenceReportsResponse = {
+  node_id: string;
+  sequence_number: number;
+  count: number;
+  reports: SenderMessageReport[];
+};
+
+export type Metrics = {
   total_messages: number;
   parsed_messages: number;
   encoded_unparsed_messages: number;

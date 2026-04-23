@@ -89,6 +89,67 @@ def get_sender_messages(node_id: str) -> dict[str, str | int | list[dict[str, st
         session.close()
 
 
+@router.get("/messages/query")
+def query_messages(
+    source: str | None = None,
+    destination: str | None = None,
+    message_type: str | None = None,
+) -> dict[str, str | int | dict[str, str] | list[dict[str, str | int | None]]]:
+    session = SessionLocal()
+    try:
+        query = session.query(Message)
+
+        normalized_source = source.strip() if source else ""
+        normalized_destination = destination.strip() if destination else ""
+        normalized_message_type = message_type.strip() if message_type else ""
+
+        if normalized_source:
+            query = query.filter(Message.source == normalized_source)
+        if normalized_destination:
+            query = query.filter(Message.destination == normalized_destination)
+        if normalized_message_type:
+            query = query.filter(Message.message_type == normalized_message_type)
+
+        rows = (
+            query.order_by(
+                Message.source.asc(),
+                Message.sequence_number.asc(),
+                Message.timestamp.asc(),
+                Message.id.asc(),
+            )
+            .all()
+        )
+
+        unique_messages: dict[tuple[str, int], Message] = {}
+        for row in rows:
+            key = (row.source, row.sequence_number)
+            if key not in unique_messages:
+                unique_messages[key] = row
+
+        messages = [
+            {
+                "sequence_number": row.sequence_number,
+                "source": row.source,
+                "destination": row.destination,
+                "portnum": row.portnum,
+                "message_type": row.message_type,
+            }
+            for _, row in sorted(unique_messages.items(), key=lambda item: (item[0][0], item[0][1]))
+        ]
+
+        return {
+            "count": len(messages),
+            "filters": {
+                "source": normalized_source,
+                "destination": normalized_destination,
+                "message_type": normalized_message_type,
+            },
+            "messages": messages,
+        }
+    finally:
+        session.close()
+
+
 @router.get("/nodes/{node_id}/messages/{sequence_number}/reports")
 def get_sequence_reports(node_id: str, sequence_number: int) -> dict[str, str | int | list[dict[str, str | int | None]]]:
     session = SessionLocal()
