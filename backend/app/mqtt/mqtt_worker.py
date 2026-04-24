@@ -77,10 +77,8 @@ def publish_mqtt_message(source: str, destination: str, payload: str) -> bool:
         if publish_result.rc != mqtt.MQTT_ERR_SUCCESS:
             raise RuntimeError(f"MQTT publish failed with code {publish_result.rc}")
         print(f"Published MQTT message to topic {topic}: {message_body}")
-        return True
     except OSError as exc:
         print(f"MQTT publish failed: {exc}")
-        return False
     finally:
         try:
             client.loop_stop()
@@ -90,6 +88,7 @@ def publish_mqtt_message(source: str, destination: str, payload: str) -> bool:
             client.disconnect()
         except Exception:
             pass
+    return True
 
 def mqtt_startup(app) -> None:
 
