@@ -74,6 +74,7 @@ def get_sender_messages(node_id: str) -> dict[str, str | int | list[dict[str, st
                 "sequence_number": row.sequence_number,
                 "source": row.source,
                 "destination": row.destination,
+                "timestamp": row.timestamp.isoformat(),
                 "portnum": row.portnum,
                 "message_type": row.message_type,
             }
@@ -118,8 +119,8 @@ def query_messages(
             query.order_by(
                 Message.source.asc(),
                 Message.sequence_number.asc(),
-                Message.timestamp.asc(),
-                Message.id.asc(),
+                Message.timestamp.desc(),
+                Message.id.desc(),
             )
             .all()
         )
@@ -135,10 +136,15 @@ def query_messages(
                 "sequence_number": row.sequence_number,
                 "source": row.source,
                 "destination": row.destination,
+                "timestamp": row.timestamp.isoformat(),
                 "portnum": row.portnum,
                 "message_type": row.message_type,
             }
-            for _, row in sorted(unique_messages.items(), key=lambda item: (item[0][0], item[0][1]))
+            for _, row in sorted(
+                unique_messages.items(),
+                key=lambda item: (item[1].timestamp, item[1].id),
+                reverse=True,
+            )
         ]
 
         return {

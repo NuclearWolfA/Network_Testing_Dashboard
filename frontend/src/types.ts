@@ -18,6 +18,7 @@ export type SenderMessage = {
   sequence_number: number;
   source: string;
   destination: string;
+  timestamp: string;
   portnum: string | null;
   message_type: string | null;
 };

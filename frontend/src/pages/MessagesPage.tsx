@@ -4,6 +4,21 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { clearMessagesTable, fetchQueryMessages } from "../api";
 import type { MessageQueryResponse, SenderMessage } from "../types";
 
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest First" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "source-asc", label: "Source (A-Z)" },
+  { value: "source-desc", label: "Source (Z-A)" },
+  { value: "destination-asc", label: "Destination (A-Z)" },
+  { value: "destination-desc", label: "Destination (Z-A)" },
+  { value: "message-type-asc", label: "Message Type (A-Z)" },
+  { value: "message-type-desc", label: "Message Type (Z-A)" },
+  { value: "portnum-asc", label: "Portnum (A-Z)" },
+  { value: "portnum-desc", label: "Portnum (Z-A)" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+
 export default function MessagesPage() {
   const { nodeId = "" } = useParams();
   const navigate = useNavigate();
@@ -17,6 +32,7 @@ export default function MessagesPage() {
   const [messagesError, setMessagesError] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
   const [clearStatus, setClearStatus] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   useEffect(() => {
     const sourceFromQuery = searchParams.get("source") ?? "";
@@ -112,6 +128,37 @@ export default function MessagesPage() {
     navigate(`/messages/${encodeURIComponent(message.source)}/sequence/${message.sequence_number}`);
   };
 
+  const sortedMessages = [...(messagesData?.messages ?? [])].sort((a, b) => {
+    const compareText = (left: string | null, right: string | null) =>
+      (left ?? "").localeCompare(right ?? "", undefined, { sensitivity: "base" });
+    const timestampDiff = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+
+    switch (sortBy) {
+      case "newest":
+        return -timestampDiff || b.sequence_number - a.sequence_number || a.source.localeCompare(b.source);
+      case "oldest":
+        return timestampDiff || a.sequence_number - b.sequence_number || a.source.localeCompare(b.source);
+      case "source-asc":
+        return a.source.localeCompare(b.source) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "source-desc":
+        return b.source.localeCompare(a.source) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "destination-asc":
+        return compareText(a.destination, b.destination) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "destination-desc":
+        return compareText(b.destination, a.destination) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "message-type-asc":
+        return compareText(a.message_type, b.message_type) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "message-type-desc":
+        return compareText(b.message_type, a.message_type) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "portnum-asc":
+        return compareText(a.portnum, b.portnum) || -timestampDiff || b.sequence_number - a.sequence_number;
+      case "portnum-desc":
+        return compareText(b.portnum, a.portnum) || -timestampDiff || b.sequence_number - a.sequence_number;
+      default:
+        return -timestampDiff || b.sequence_number - a.sequence_number || a.source.localeCompare(b.source);
+    }
+  });
+
   return (
     <main className="page">
       <section className="panel sender-panel">
@@ -166,6 +213,16 @@ export default function MessagesPage() {
             <button type="button" onClick={() => void clearMessages()} disabled={isClearing}>
               {isClearing ? "Clearing..." : "Clear Messages Table"}
             </button>
+            <label>
+              Sort By
+              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortOption)}>
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </section>
 
@@ -176,6 +233,7 @@ export default function MessagesPage() {
         {messagesData && !messagesLoading ? (
           <>
             <p className="muted">Found {messagesData.count} sequence entries.</p>
+            <p className="muted">Sorted by: {SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? "Newest First"}.</p>
             <p className="muted">Only one row is shown per source and sequence number (reporter duplicates removed).</p>
             <div className="table-wrap">
               <table>
@@ -189,12 +247,12 @@ export default function MessagesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {messagesData.messages.length === 0 ? (
+                  {sortedMessages.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="empty">No messages found for the selected filters.</td>
                     </tr>
                   ) : (
-                    messagesData.messages.map((message) => (
+                    sortedMessages.map((message) => (
                       <tr key={`${message.source}-${message.sequence_number}`}>
                         <td>{message.source}</td>
                         <td>
