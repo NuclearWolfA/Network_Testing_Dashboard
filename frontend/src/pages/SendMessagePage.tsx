@@ -1,13 +1,21 @@
 import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { sendMessage } from "../api";
 
+type SentMessageResult = {
+  source: string;
+  message: string;
+  sequenceNumber: number | null;
+};
+
 export default function SendMessagePage() {
+  const navigate = useNavigate();
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
   const [payload, setPayload] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [sentMessageResult, setSentMessageResult] = useState<SentMessageResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -15,26 +23,27 @@ export default function SendMessagePage() {
 
     if (!source.trim() || !destination.trim() || !payload.trim()) {
       setError("Source, destination, and payload are required.");
-      setResultMessage(null);
+      setSentMessageResult(null);
       return;
     }
 
     setIsSending(true);
     setError(null);
-    setResultMessage(null);
+    setSentMessageResult(null);
 
     try {
+      const trimmedSource = source.trim();
       const response = await sendMessage({
-        source,
+        source: trimmedSource,
         destination,
         payload,
       });
 
-      const sequenceText =
-        typeof response.sequence_number === "number"
-          ? ` Sequence number: ${response.sequence_number}.`
-          : "";
-      setResultMessage(`${response.message ?? "Message sent successfully."}${sequenceText}`);
+      setSentMessageResult({
+        source: trimmedSource,
+        message: response.message ?? "Message sent successfully.",
+        sequenceNumber: typeof response.sequence_number === "number" ? response.sequence_number : null,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to send message";
       setError(message);
@@ -89,7 +98,26 @@ export default function SendMessagePage() {
         </form>
 
         {error ? <p className="error">{error}</p> : null}
-        {resultMessage ? <p className="muted">{resultMessage}</p> : null}
+        {sentMessageResult ? (
+          <p className="muted">
+            {sentMessageResult.message}
+            {sentMessageResult.sequenceNumber !== null ? " Sequence number: " : ""}
+            {sentMessageResult.sequenceNumber !== null ? (
+              <button
+                type="button"
+                className="link-button"
+                onClick={() =>
+                  navigate(
+                    `/messages/${encodeURIComponent(sentMessageResult.source)}/sequence/${sentMessageResult.sequenceNumber}`,
+                  )
+                }
+              >
+                {sentMessageResult.sequenceNumber}
+              </button>
+            ) : null}
+            {sentMessageResult.sequenceNumber !== null ? "." : ""}
+          </p>
+        ) : null}
       </section>
     </main>
   );
