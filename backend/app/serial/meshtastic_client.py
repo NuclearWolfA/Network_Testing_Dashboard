@@ -13,6 +13,16 @@ def get_meshtastic_ports():
     ports: meshtastic.serial_interface.List[str] = meshtastic.util.findPorts(True)
     return ports
 
+def get_portnum_value(portnum):
+    if isinstance(portnum, int):
+        return portnum
+    if isinstance(portnum, str):
+        try:
+            return int(portnum)
+        except ValueError:
+            return getattr(portnums_pb2.PortNum, portnum, None)
+    return None
+
 def on_receive(packet, interface):
     timestamp = datetime.now().astimezone()
     print(f"Received packet on {interface.myInfo.my_node_num}: {packet}")
@@ -41,11 +51,12 @@ def on_receive(packet, interface):
                     message.message_type = "NACK"
         if packet["decoded"].get("portnum"):
             message.portnum = packet["decoded"]["portnum"]
+            portnum_value = get_portnum_value(message.portnum)
             #print(f"Received message on port {message.portnum}")
             #print(f"Type of the portnum: {type(message.portnum)}")
-            if message.portnum == "TELEMETRY_APP" or message.portnum == "SIMULATOR_APP":
+            if portnum_value in (portnums_pb2.PortNum.TELEMETRY_APP, portnums_pb2.PortNum.SIMULATOR_APP):
                 need_to_upload = False
-            elif message.portnum == 78: # SDN messages
+            elif portnum_value == portnums_pb2.PortNum.SDN_APP:
                 payload = packet["decoded"].get('payload', None)
                 try:
                     sdn_message = sdn_pb2.SDN()
@@ -69,7 +80,7 @@ def on_receive(packet, interface):
                 except Exception as e:
                     print(f"Error parsing SDN message: {e}")
             
-            elif message.portnum == 75:
+            elif portnum_value == portnums_pb2.PortNum.AODV_ROUTING_APP:
                 payload = packet["decoded"].get('payload', None)
                 try:
                     aodv_message = aodv_pb2.AODV()
@@ -80,8 +91,12 @@ def on_receive(packet, interface):
                         message.message_type = "RREP"
                     elif aodv_message.HasField("rerr"):
                         message.message_type = "RERR"
-                    elif aodv_message.HasField("rrep_ack"):
+                    elif "rrep_ack" in aodv_message.DESCRIPTOR.fields_by_name and aodv_message.HasField("rrep_ack"):
                         message.message_type = "RREP_ACK"
+                    elif aodv_message.HasField("rt_request"):
+                        message.message_type = "ROUTE_TABLE_REQUEST"
+                    elif aodv_message.HasField("rt_response"):
+                        message.message_type = "ROUTE_TABLE_RESPONSE"
                     else:
                         message.message_type = "UNKNOWN_AODV_MESSAGE"
                 except Exception as e:
