@@ -35,6 +35,8 @@ def on_receive(packet, interface):
         sequence_number=packet["id"],
     )
     #print(f"[Debug] Timestamp: {message.timestamp}")
+    if packet.get("encrypted"):
+        message.message_type = "FORWARDED MESSAGE"
     if packet.get("hopStart") and packet.get("hopLimit"):
         message.hops_away = packet["hopStart"] - packet["hopLimit"]
     if packet.get("decoded"):
