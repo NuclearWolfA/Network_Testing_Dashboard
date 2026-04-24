@@ -125,7 +125,7 @@ def start_meshtastic_client(app):
     pub.subscribe(on_receive, "meshtastic.receive")
     ports = get_meshtastic_ports()
     if len(ports) == 0:
-        raise RuntimeError("No meshtastic devices found")
+        print("No meshtastic devices found; skipping Meshtastic startup.")
         return
     app.state.comport_intereface_dic = {}
     app.state.node_id_interface_dic = {}

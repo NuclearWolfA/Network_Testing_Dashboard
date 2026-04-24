@@ -8,9 +8,9 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     database_url: str
 
-    mqtt_host: str = "localhost"
+    mqtt_host: str = "broker.emqx.io"
     mqtt_port: int = 1883
-    mqtt_topic: str = "meshtastic/#"
+    mqtt_topic: str = "meshtastic"
     mqtt_client_id: str = "network-testing-dashboard"
 
     backend_id: str = "backend-acer-tharoosha"

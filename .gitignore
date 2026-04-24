@@ -38,3 +38,4 @@ backend/app/schemas/__pycache__/
 backend/app/generated/__pycache__/
 backend/app/models/__pycache__/
 backend/alembic/versions/__pycache__/
+backend/app/mqtt/__pycache__/

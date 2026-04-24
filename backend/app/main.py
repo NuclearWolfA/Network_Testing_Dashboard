@@ -1,11 +1,12 @@
 from fastapi import FastAPI
+from threading import Thread
 
 from app.api.analyze_api import router as analyze_router
 from app.api.routes import router
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.services.backend_registry import upsert_backend_instance
-
+from app.mqtt.mqtt_worker import mqtt_startup
 
 app = FastAPI(title=settings.app_name)
 
@@ -26,3 +27,6 @@ def startup_event():
         start_meshtastic_client(app)
     except Exception as e:
         print(f"Error starting meshtastic client: {e}")
+
+    # Start MQTT client in the background so the API can finish booting.
+    Thread(target=mqtt_startup, kwargs={"app": app}, daemon=True).start()

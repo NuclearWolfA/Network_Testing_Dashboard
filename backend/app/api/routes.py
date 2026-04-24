@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from app.serial.meshtastic_client import send_meshtastic_message
+from app.mqtt.mqtt_worker import publish_mqtt_message
 
 
 router = APIRouter()
@@ -22,7 +23,8 @@ async def send_text(request: Request, source: str, destination: str, payload: st
     # Here you can add code to send the message using the meshtastic client
     interface = request.app.state.node_id_interface_dic.get(source)
     if not interface:
-        return {"error": "Source node not found"}
+        publish_mqtt_message(source, destination, payload)
+        return {"message": f"No local interface for source {source}; published to MQTT instead."}
     seq_no = send_meshtastic_message(request.app, interface, destination, payload)
 
     return {"message": "Message sent successfully", "sequence_number": seq_no}
