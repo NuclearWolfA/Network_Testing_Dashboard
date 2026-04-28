@@ -21,7 +21,11 @@ def nodes_legacy_redirect() -> RedirectResponse:
 async def send_text(request: Request, source: str, destination: str, payload: str):
     print(f"Received send request: source={source}, destination={destination}, payload={payload}")
     # Here you can add code to send the message using the meshtastic client
-    interface = request.app.state.node_id_interface_dic.get(source)
+    node_id_interface_dic = getattr(request.app.state, "node_id_interface_dic", {})
+    if not node_id_interface_dic:
+        publish_mqtt_message(source, destination, payload)
+        return {"message": "No meshtastic interfaces available; published to MQTT instead."}
+    interface = node_id_interface_dic.get(source)
     if not interface:
         publish_mqtt_message(source, destination, payload)
         return {"message": f"No local interface for source {source}; published to MQTT instead."}
