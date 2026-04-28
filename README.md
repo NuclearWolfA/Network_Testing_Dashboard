@@ -18,8 +18,6 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-alembic upgrade head
-python -m app.mqtt_worker
 ```
 
 ## Hard reset DB (data loss)
